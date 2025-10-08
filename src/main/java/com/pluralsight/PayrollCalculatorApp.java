@@ -1,6 +1,7 @@
 package com.pluralsight;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class PayrollCalculatorApp {
@@ -80,10 +81,15 @@ public class PayrollCalculatorApp {
         // create an array of employee objects
         Employee[] employees = new Employee[8];
 
+        // write to beginning of file
+        bufferedWriter.write("[\n");
 
+        // create an arraylist to store content to write
+        ArrayList<String>  output = new ArrayList<String>();
+
+        // index for tokens
         int i = 0;
 
-        bufferedWriter.write("[\n");
         // this loop reads the current line in the bufferedReader and displays the contents if not null
         while ( (input = bufferedReader.readLine()) != null ) {
 
@@ -100,18 +106,24 @@ public class PayrollCalculatorApp {
             employees[i] = new Employee(id, name, hoursWorked, payRate);
 
             // create a format string to write
-            String output = String.format("\t{ \"id\" : %s, \"name\" : \"%s\", \"gross pay\" : $%.2f },", employees[i].getEmployeeID(),
+            String content = String.format("{ \"id\": %s, \"name\" : \"%s\", \"gross pay\" : $%.2f }", employees[i].getEmployeeID(),
                     employees[i].getName(), employees[i].getGrossPay());
 
-            // write the formatted string to the file
-            bufferedWriter.write(output);
-
-            // go to a new line
-            bufferedWriter.newLine();
-
+            output.add(i, content);
             i++;
 
         }
+
+        for (int j = 0; j < output.size(); j++) {
+            // write each element in the output arraylist
+            bufferedWriter.write("\t"+ output.get(j));
+            if (j != output.size() - 1) {
+                bufferedWriter.write(",");
+            }
+            // go to a new line
+            bufferedWriter.newLine();
+        }
+
 
         bufferedWriter.write("]");
         bufferedWriter.close();
