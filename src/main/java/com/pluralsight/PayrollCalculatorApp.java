@@ -7,68 +7,42 @@ public class PayrollCalculatorApp {
 
     public static void main(String[] args) throws IOException {
 
+        enterFiles();
+
+    }
+
+    private static void enterFiles() throws IOException {
         Scanner scanner = new Scanner(System.in);
 
         // prints out a message to get the file to read
         System.out.println("Enter the name of the employee file to process: ");
-        String readFile = scanner.nextLine();
+        String sourceFile = scanner.nextLine();
 
         // prints out a message to get the name of a file to create
         System.out.println("Enter the name of the payroll file to create: ");
-        String makeFile = scanner.nextLine();
+        String targetFile = scanner.nextLine();
 
+        // creates the file
+        writeFile(targetFile, sourceFile);
+    }
+
+    private static void writeFile(String targetFile, String sourceFile) throws IOException {
         boolean isJson = false;
 
-
         // check if the file is a .json
-        if (makeFile.endsWith(".json")) {
+        if (targetFile.endsWith(".json")) {
             isJson = true;
         }
 
-        try (BufferedReader  bufferedReader = new BufferedReader(new FileReader(readFile));
-            BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(makeFile)) ) {
+        try (BufferedReader bufferedReader = new BufferedReader(new FileReader(sourceFile));
+             BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(targetFile)) ) {
 
 
             String input;
 
             // if it's a .json file do this
             if (isJson) {
-                // create an array of employee objects
-                Employee[] employees = new Employee[8];
-
-
-                int i = 0;
-
-                bufferedWriter.write("[\n");
-                // this loop reads the current line in the bufferedReader and displays the contents if not null
-                while ( (input = bufferedReader.readLine()) != null ) {
-
-                    // split the current line into seperate fields
-                    String[] tokens = input.split("[|]");
-
-                    // create variables to store each field
-                    String id = tokens[0];
-                    String name = tokens[1];
-                    double hoursWorked = Double.parseDouble(tokens[2]);
-                    double payRate = Double.parseDouble(tokens[3]);
-
-                    // create a new employee object using the fields
-                    employees[i] = new Employee(id, name, hoursWorked, payRate);
-
-                    // create a format string to write
-                    String output = String.format("\t{ \"id\" : %s, \"name\" : \"%s\", \"gross pay\" : $%.2f },", employees[i].getEmployeeID(),
-                            employees[i].getName(), employees[i].getGrossPay());
-
-                    // write the formatted string to the file
-                    bufferedWriter.write(output);
-
-                    // go to a new line
-                    bufferedWriter.newLine();
-
-                    i++;
-
-                }
-                bufferedWriter.write("]");
+                toJson(bufferedWriter, bufferedReader);
             }
             else {
                 // check if the current line is null and print out if it is not
@@ -78,12 +52,69 @@ public class PayrollCalculatorApp {
             }
 
         } catch (IOException e) {
-            System.out.println("Error occured");
+            // create a file object of file at source file path
+            File readFile = new File(sourceFile);
+
+            // check if the file exists
+            if (!readFile.exists()) {
+                System.out.println("Source file not found, please try again.");
+            }
+            else {
+                e.printStackTrace();
+                System.exit(404);
+            }
+
+            // return to main method an rerun
+            String[] args = new String[0];
+            String[] strings = new String[]{""};
+            main(strings);
+
+        }
+    }
+
+    private static void toJson(BufferedWriter bufferedWriter, BufferedReader bufferedReader) throws IOException {
+        String input;
+        // create an array of employee objects
+        Employee[] employees = new Employee[8];
+
+
+        int i = 0;
+
+        bufferedWriter.write("[\n");
+        // this loop reads the current line in the bufferedReader and displays the contents if not null
+        while ( (input = bufferedReader.readLine()) != null ) {
+
+            // split the current line into seperate fields
+            String[] tokens = input.split("[|]");
+
+            // create variables to store each field
+            String id = tokens[0];
+            String name = tokens[1];
+            double hoursWorked = Double.parseDouble(tokens[2]);
+            double payRate = Double.parseDouble(tokens[3]);
+
+            // create a new employee object using the fields
+            employees[i] = new Employee(id, name, hoursWorked, payRate);
+
+            // create a format string to write
+            String output = String.format("\t{ \"id\" : %s, \"name\" : \"%s\", \"gross pay\" : $%.2f },", employees[i].getEmployeeID(),
+                    employees[i].getName(), employees[i].getGrossPay());
+
+            // write the formatted string to the file
+            bufferedWriter.write(output);
+
+            // go to a new line
+            bufferedWriter.newLine();
+
+            i++;
 
         }
 
+        bufferedWriter.write("]");
+        bufferedWriter.close();
     }
 
+    // This method prints out the contents of employees.csv in a certain format, not implemented in current version
     private static void readPayRoll(String readFile) throws IOException {
 
         FileReader fileReader = new FileReader(readFile);
