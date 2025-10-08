@@ -59,6 +59,9 @@ public class PayrollCalculatorApp {
             if (!readFile.exists()) {
                 System.out.println("Source file not found, please try again.");
             }
+            else if (targetFile.isEmpty()) {
+                System.out.println("Name for target file cannot be empty, please try again.");
+            }
             else {
                 e.printStackTrace();
                 System.exit(404);
